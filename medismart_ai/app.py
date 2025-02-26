@@ -4,6 +4,8 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import pytesseract
+from PIL import Image
 
 # Initialize Flask app
 app = Flask(__name__, template_folder="frontend/templates", static_folder="frontend/static")
@@ -66,10 +68,12 @@ class Prescription(db.Model):
     patient_name = db.Column(db.String(100), nullable=True)
     doctor_name = db.Column(db.String(100), nullable=True)
     date = db.Column(db.Date, nullable=True)
+    is_handwritten = db.Column(db.Boolean, default=False)
+    extracted_text = db.Column(db.Text, nullable=True)
     medications = db.relationship('Medication', backref='prescription', lazy=True, cascade="all, delete-orphan")
 
     def __init__(self, user_id, filename, language='auto', find_alternatives=True, 
-                check_interactions=True, insurance_coverage=False):
+                check_interactions=True, insurance_coverage=False, is_handwritten=False):
         self.user_id = user_id
         self.filename = filename
         self.language = language
@@ -79,6 +83,7 @@ class Prescription(db.Model):
         self.patient_name = "Self"  # Default value
         self.doctor_name = "Unknown"  # Default value
         self.date = datetime.utcnow().date()  # Default to today
+        self.is_handwritten = is_handwritten
 
 # ==============================
 # MEDICATION MODEL
@@ -114,6 +119,20 @@ def inject_user():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# ==============================
+# OCR TEXT EXTRACTION FUNCTION
+# ==============================
+def extract_text(image_path, is_handwritten=False):
+    """ Extract text using OCR (with different config for handwritten) """
+    try:
+        img = Image.open(image_path)
+        custom_config = "--oem 3 --psm 6" if is_handwritten else ""  # Improve handwritten text recognition
+        text = pytesseract.image_to_string(img, config=custom_config)
+        return text.strip()
+    except Exception as e:
+        print(f"OCR Error: {str(e)}")
+        return None
+
 # Helper functions
 def search_medications(query):
     # Placeholder for medication search functionality
@@ -138,26 +157,81 @@ def get_medication_details(medication_id):
     return sample_meds.get(medication_id)
 
 def process_prescription(prescription_id):
-    # Placeholder for prescription processing
-    # In a real app, this would use OCR, ML, etc.
+    """Process the prescription image and extract text using OCR"""
     prescription = Prescription.query.get(prescription_id)
-    if prescription:
+    if not prescription:
+        return None
+    
+    # Get the file path
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], prescription.filename)
+    
+    # Perform OCR
+    extracted_text = extract_text(file_path, is_handwritten=prescription.is_handwritten)
+    
+    # Save the extracted text to the prescription
+    if extracted_text:
+        prescription.extracted_text = extracted_text
         prescription.status = 'Processed'
+        db.session.commit()
+    
+    # Parse the extracted text for medications (simple implementation)
+    # In a real app, this would use NLP/ML to extract medication details
+    if extracted_text:
+        lines = extracted_text.split('\n')
+        for line in lines:
+            if 'rx:' in line.lower() or 'medication:' in line.lower():
+                # Extract medication from the line (simplified approach)
+                parts = line.split(':')
+                if len(parts) > 1:
+                    med_info = parts[1].strip()
+                    # Look for dosage information
+                    dosage = None
+                    for part in med_info.split():
+                        if part.lower().endswith('mg') or part.lower().endswith('ml'):
+                            dosage = part
+                            med_name = med_info.replace(dosage, '').strip()
+                            break
+                    else:
+                        med_name = med_info
+                        
+                    # Create a new medication record
+                    medication = Medication(
+                        prescription_id=prescription.id,
+                        name=med_name,
+                        dosage=dosage
+                    )
+                    db.session.add(medication)
         
-        # Add sample medications for demonstration
-        medications = [
-            Medication(prescription_id=prescription.id, name='Sample Medication 1', 
-                     dosage='500mg', frequency='Twice daily', duration='7 days'),
-            Medication(prescription_id=prescription.id, name='Sample Medication 2', 
-                     dosage='250mg', frequency='Once daily', duration='10 days')
-        ]
-        
-        for med in medications:
-            db.session.add(med)
+        # If no medications were found, add a placeholder
+        if not Medication.query.filter_by(prescription_id=prescription.id).first():
+            medication = Medication(
+                prescription_id=prescription.id,
+                name="Medication (please edit)",
+                dosage="Unknown"
+            )
+            db.session.add(medication)
             
         db.session.commit()
-        return True
-    return False
+    
+    # Get result for display
+    result = {
+        'prescription_id': prescription.id,
+        'extracted_text': extracted_text or "No text could be extracted",
+        'status': prescription.status,
+        'medications': [
+            {
+                'name': med.name,
+                'dosage': med.dosage,
+                'frequency': med.frequency,
+                'duration': med.duration
+            }
+            for med in Medication.query.filter_by(prescription_id=prescription.id).all()
+        ],
+        'is_handwritten': prescription.is_handwritten,
+        'confidence': 95.5  # Placeholder - real OCR would provide confidence scores
+    }
+    
+    return result
 
 # ==============================
 # AUTHENTICATION BLUEPRINT
@@ -266,19 +340,19 @@ def history():
     prescriptions = Prescription.query.filter_by(user_id=user.id).all()
     return render_template('history.html', prescriptions=prescriptions)
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_prescription():
+@app.route('/ocr_prescription', methods=['GET', 'POST'])
+def ocr_prescription():
     if 'user_id' not in session:
         flash("You need to log in first.", "warning")
         return redirect(url_for('auth_bp.login'))
         
     if request.method == 'POST':
         # Check if a file was uploaded
-        if 'prescription' not in request.files:
+        if 'prescription_image' not in request.files:
             flash('No file part', 'danger')
             return redirect(request.url)
             
-        file = request.files['prescription']
+        file = request.files['prescription_image']
         
         # If no file selected
         if file.filename == '':
@@ -298,6 +372,7 @@ def upload_prescription():
             file.save(file_path)
             
             # Get optional parameters
+            is_handwritten = 'is_handwritten' in request.form
             language = request.form.get('language', 'auto')
             find_alternatives = 'find_alternatives' in request.form
             check_interactions = 'check_interactions' in request.form
@@ -307,6 +382,7 @@ def upload_prescription():
             prescription = Prescription(
                 user_id=session['user_id'],
                 filename=filename,
+                is_handwritten=is_handwritten,
                 language=language,
                 find_alternatives=find_alternatives,
                 check_interactions=check_interactions,
@@ -316,11 +392,11 @@ def upload_prescription():
             db.session.add(prescription)
             db.session.commit()
             
-            # Process the prescription (could be moved to a background task)
-            success = process_prescription(prescription.id)
+            # Process the prescription
+            result = process_prescription(prescription.id)
             
-            if success:
-                flash('Prescription uploaded and processed successfully!', 'success')
+            if result:
+                # Redirect to results page
                 return redirect(url_for('view_prescription', prescription_id=prescription.id))
             else:
                 flash('There was a problem processing your prescription.', 'danger')
@@ -330,7 +406,16 @@ def upload_prescription():
             flash(f'Allowed file types are: {", ".join(ALLOWED_EXTENSIONS)}', 'warning')
             return redirect(request.url)
             
-    return render_template('upload.html')
+    return render_template('ocr_upload.html')
+
+@app.route('/upload_prescription')
+def upload_prescription():
+    if 'user_id' not in session:
+        flash("You need to log in first.", "warning")
+        return redirect(url_for('auth_bp.login'))
+    
+    # This simply renders the upload form
+    return render_template('ocr_upload.html')
 
 @app.route('/prescription/<int:prescription_id>')
 def view_prescription(prescription_id):
@@ -345,14 +430,29 @@ def view_prescription(prescription_id):
         flash("You don't have permission to view this prescription.", "danger")
         return redirect(url_for('dashboard'))
         
-    # Get the medications for this prescription
-    medications = Medication.query.filter_by(prescription_id=prescription.id).all()
+    # Get the OCR results
+    result = {
+        'prescription_id': prescription.id,
+        'extracted_text': prescription.extracted_text or "No text could be extracted",
+        'status': prescription.status,
+        'medications': [
+            {
+                'name': med.name,
+                'dosage': med.dosage,
+                'frequency': med.frequency,
+                'duration': med.duration
+            }
+            for med in Medication.query.filter_by(prescription_id=prescription.id).all()
+        ],
+        'is_handwritten': prescription.is_handwritten,
+        'confidence': 95.5  # Placeholder
+    }
     
-    # Get any drug interactions
-    interactions = session.get(f'interactions_{prescription_id}', [])
+    if not result:
+        flash("Could not retrieve prescription data.", "danger")
+        return redirect(url_for('dashboard'))
     
-    return render_template('view_prescription.html', prescription=prescription, 
-                          medications=medications, interactions=interactions)
+    return render_template('ocr_results.html', result=result, prescription=prescription)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):

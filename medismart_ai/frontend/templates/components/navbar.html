@@ -3,34 +3,43 @@
     <div class="flex justify-between h-16">
       <div class="flex">
         <div class="flex-shrink-0 flex items-center">
-          <a href="{{ url_for('index') }}" class="text-xl font-bold text-blue-600">
+          <a href="{{ url_for('index') }}" class="text-xl font-bold text-blue-600 hover:text-blue-800 transition">
             MediSmart AI
           </a>
         </div>
         <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
           <a href="{{ url_for('dashboard') }}"
-             class="{% if request.endpoint == 'dashboard' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+             class="{% if request.endpoint == 'dashboard' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150">
             Dashboard
           </a>
 
           <a href="{{ url_for('history') }}"
-             class="{% if request.endpoint == 'history' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+             class="{% if request.endpoint == 'history' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150">
             History
           </a>
 
           <a href="{{ url_for('medications') }}"
-             class="{% if request.endpoint == 'medications' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+             class="{% if request.endpoint == 'medications' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150">
             Medications
           </a>
 
           <a href="{{ url_for('alternative_medications') }}"
-             class="{% if request.endpoint == 'alternative_medications' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+             class="{% if request.endpoint == 'alternative_medications' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150">
             Alternatives
           </a>
 
           <a href="{{ url_for('drug_interactions') }}"
-             class="{% if request.endpoint == 'drug_interactions' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+             class="{% if request.endpoint == 'drug_interactions' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150">
             Interactions
+          </a>
+          
+          <a href="{{ url_for('upload_prescription') }}"
+             class="{% if request.endpoint == 'ocr_prescription' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-150">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+             </svg>
+             Scan Prescription
           </a>
         </div>
       </div>
@@ -38,11 +47,12 @@
       <div class="hidden sm:ml-6 sm:flex sm:items-center">
         {% if current_user.is_authenticated %}
           <div class="relative" x-data="{ open: false }">
-            <button @click="open = !open" class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500">
+            <button @click="open = !open" class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <span class="sr-only">Open user menu</span>
               <i class="fas fa-user h-6 w-6"></i>
             </button>
-            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-              <div class="px-4 py-2 font-medium text-gray-900">
+            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5">
+              <div class="px-4 py-2 font-medium text-gray-900 border-b border-gray-100">
                 {{ current_user.name or current_user.email }}
               </div>
               <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -58,10 +68,11 @@
 
       <div class="flex items-center sm:hidden">
         <div class="relative" x-data="{ open: false }">
-          <button @click="open = !open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+          <button @click="open = !open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <span class="sr-only">Open main menu</span>
             <i class="fas fa-bars h-6 w-6"></i>
           </button>
-          <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+          <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5">
             <a href="{{ url_for('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
               Dashboard
             </a>
@@ -76,6 +87,10 @@
             </a>
             <a href="{{ url_for('drug_interactions') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
               Interactions
+            </a>
+            <a href="{{ url_for('upload_prescription') }}"
+             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              Scan Prescription
             </a>
 
             {% if current_user.is_authenticated %}
