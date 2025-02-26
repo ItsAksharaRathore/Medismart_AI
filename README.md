@@ -57,7 +57,7 @@ MediSmart AI is a groundbreaking solution that transforms how pharmacies handle 
 
 ## 🏗️ System Architecture
 
-![System Architecture](C:\Medi1\medismart_ai\system_architecture.jpg)
+![System Architecture](medismart_ai\system_architecture.jpg)
 
 ### Prescription Processing Module
 - Image preprocessing
