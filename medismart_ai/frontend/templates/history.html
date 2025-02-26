@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+
+{% block title %}Prescription History - MediSmart AI{% endblock %}
+
+{% block content %}
+<div class="pt-16 pb-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Prescription History</h1>
+            <p class="text-gray-600">View and manage all processed prescriptions.</p>
+        </div>
+        <button id="show-upload-btn" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <i class="fas fa-plus mr-2"></i>
+            Upload Prescription
+        </button>
+    </div>
+
+    <!-- Prescription Upload Modal -->
+    <div id="upload-modal" class="fixed inset-0 z-50 hidden overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full m-4 max-h-90vh overflow-y-auto">
+            <div class="flex justify-between items-center border-b p-4">
+                <h3 class="text-xl font-medium text-gray-900">Upload Prescription</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form action="{{ url_for('upload_prescription') }}" method="post" enctype="multipart/form-data" id="upload-form">
+                    <div class="upload-area" id="drop-area">
+                        <input type="file" name="prescription" id="file-input" accept="image/*,.pdf" required hidden>
+                        <div class="upload-placeholder">
+                            <i class="fas fa-cloud-upload-alt text-5xl text-blue-500 mb-4"></i>
+                            <p>Drag and drop your prescription image here</p>
+                            <p class="text-gray-500 text-sm my-2">or</p>
+                            <button type="button" id="browse-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Browse Files</button>
+                        </div>
+                        <div class="file-preview" id="file-preview" hidden>
+                            <img id="preview-image" src="" alt="Prescription preview" class="max-h-60 mx-auto mb-4">
+                            <div class="file-info flex justify-between items-center p-2 bg-gray-100 rounded">
+                                <p id="file-name" class="text-gray-700">filename.jpg</p>
+                                <button type="button" id="remove-file" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-times"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <label for="language" class="block text-sm font-medium text-gray-700">Prescription Language:</label>
+                        <select name="language" id="language" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="auto">Auto-detect</option>
+                            <option value="english">English</option>
+                            <option value="hindi">Hindi</option>
+                            <option value="spanish">Spanish</option>
+                            <option value="french">French</option>
+                            <option value="chinese">Chinese</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Processing Options</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input type="checkbox" id="find-alternatives" name="find_alternatives" checked class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="find-alternatives" class="font-medium text-gray-700">Find Alternative Medications</label>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input type="checkbox" id="check-interactions" name="check_interactions" checked class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="check-interactions" class="font-medium text-gray-700">Check Drug Interactions</label>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input type="checkbox" id="insurance-coverage" name="insurance_coverage" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="insurance-coverage" class="font-medium text-gray-700">Check Insurance Coverage</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex flex-col sm:flex-row sm:space-x-4">
+                        <button type="submit" class="w-full sm:w-auto mb-2 sm:mb-0 px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-microscope mr-2"></i> Process Prescription
+                        </button>
+                        <button type="button" class="w-full sm:w-auto px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="scan-btn">
+                            <i class="fas fa-camera mr-2"></i> Scan Directly
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-6 border-t pt-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2"><i class="fas fa-info-circle mr-1 text-blue-500"></i> For Best Results:</h4>
+                    <ul class="text-sm text-gray-600 space-y-1 pl-6 list-disc">
+                        <li>Ensure good lighting when taking photos</li>
+                        <li>Keep the prescription flat to avoid distortion</li>
+                        <li>Make sure all text is clearly visible in the frame</li>
+                        <li>Supported formats: JPG, PNG, HEIC, PDF</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg leading-6 font-medium text-gray-900">All Prescriptions</h2>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ prescriptions|length }} prescriptions processed by MediSmart AI.</p>
+            </div>
+            <div class="flex space-x-2">
+                <div class="relative">
+                    <input type="text" placeholder="Search prescriptions..." class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-3 py-2 border-gray-300 rounded-md" id="prescription-search">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+                <select id="status-filter" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Filter by status</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+        </div>
+        <div class="border-t border-gray-200">
+            {% if prescriptions %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medications</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for prescription in prescriptions %}
+                            <tr class="prescription-row" data-status="{{ prescription.status }}">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ prescription.patient_name }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ prescription.doctor_name }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ prescription.date }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if prescription.status == 'Completed' %}bg-green-100 text-green-800
+                                        {% elif prescription.status == 'Processing' %}bg-blue-100 text-blue-800
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ prescription.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{% if prescription.medications %}{{ prescription.medications|length }}{% else %}0{% endif %} medications</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="{{ url_for('prescription_detail', prescription_id=prescription.id) }}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                                    <form action="{{ url_for('delete_prescription', prescription_id=prescription.id) }}" method="post" 
+                                        onsubmit="return confirm('Are you sure you want to delete this prescription?');" class="inline">
+                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No prescriptions</h3>
+                    <p class="mt-1 text-sm text-gray-500">Get started by uploading a prescription.</p>
+                    <div class="mt-6">
+                        <button id="empty-upload-btn" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-plus mr-2"></i>
+                            Upload Prescription
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Pagination section if needed -->
+    {% if prescriptions and prescriptions|length > 10 %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4 rounded-md shadow">
+        <div class="flex-1 flex justify-between sm:hidden">
+            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Previous
+            </a>
+            <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Next
+            </a>
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">{{ prescriptions|length }}</span> results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Previous</span>
+                        <i class="fas fa-chevron-left h-5 w-5"></i>
+                    </a>
+                    <a href="#" aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        1
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        2
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        3
+                    </a>
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        ...
+                    </span>
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Next</span>
+                        <i class="fas fa-chevron-right h-5 w-5"></i>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('prescription-search');
+        const tableRows = document.querySelectorAll('tbody tr');
+        const showUploadBtn = document.getElementById('show-upload-btn');
+        const emptyUploadBtn = document.getElementById('empty-upload-btn');
+        const uploadModal = document.getElementById('upload-modal');
+        const closeModal = document.getElementById('close-modal');
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const browseBtn = document.getElementById('browse-btn');
+        const previewArea = document.getElementById('file-preview');
+        const previewImage = document.getElementById('preview-image');
+        const fileName = document.getElementById('file-name');
+        const removeBtn = document.getElementById('remove-file');
+        const uploadPlaceholder = document.querySelector('.upload-placeholder');
+        const scanBtn = document.getElementById('scan-btn');
+        const statusFilter = document.getElementById('status-filter');
+        
+        // Search functionality
+        if (searchInput && tableRows) {
+            searchInput.addEventListener('input', function() {
+                filterPrescriptions();
+            });
+        }
+        
+        // Status filter functionality
+        if (statusFilter && tableRows) {
+            statusFilter.addEventListener('change', function() {
+                filterPrescriptions();
+            });
+        }
+        
+        // Combined filtering function
+        function filterPrescriptions() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const statusValue = statusFilter.value;
+            
+            tableRows.forEach(row => {
+                const rowText = row.textContent.toLowerCase();
+                const rowStatus = row.getAttribute('data-status');
+                
+                // Check if the row matches both the search term and status filter
+                const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
+                const matchesStatus = statusValue === '' || rowStatus === statusValue;
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Modal controls
+        if (showUploadBtn) {
+            showUploadBtn.addEventListener('click', function() {
+                uploadModal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            });
+        }
+        
+        if (emptyUploadBtn) {
+            emptyUploadBtn.addEventListener('click', function() {
+                uploadModal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            });
+        }
+        
+        if (closeModal) {
+            closeModal.addEventListener('click', function() {
+                uploadModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                resetUploadForm();
+            });
+        }
+        
+        // Close modal when clicking outside
+        if (uploadModal) {
+            uploadModal.addEventListener('click', function(e) {
+                if (e.target === uploadModal) {
+                    uploadModal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    resetUploadForm();
+                }
+            });
+        }
+        
+        // Function to reset the upload form
+        function resetUploadForm() {
+            if (fileInput) fileInput.value = '';
+            if (previewArea) previewArea.hidden = true;
+            if (uploadPlaceholder) uploadPlaceholder.hidden = false;
+        }
+        
+        // File upload functionality
+        if (browseBtn && fileInput) {
+            browseBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', handleFileSelect);
+        }
+        
+        if (dropArea) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+        }
+        
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                fileInput.value = '';
+                previewArea.hidden = true;
+                uploadPlaceholder.hidden = false;
+            });
+        }
+        
+        if (scanBtn) {
+            scanBtn.addEventListener('click', function() {
+                // Check if the device has camera functionality
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    alert('Opening camera for direct scanning...');
+                    // Here you would implement the camera functionality
+                    // This is just a placeholder for the actual implementation
+                } else {
+                    alert('Camera functionality is not available on this device.');
+                }
+            });
+        }
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        function highlight() {
+            dropArea.classList.add('border-blue-500', 'bg-blue-50');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('border-blue-500', 'bg-blue-50');
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        }
+        
+        function handleFileSelect() {
+            if (fileInput.files.length) {
+                const file = fileInput.files[0];
+                
+                if (file.type.match('image.*') || file.type === 'application/pdf') {
+                    fileName.textContent = file.name;
+                    
+                    if (file.type.match('image.*')) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                            previewImage.hidden = false;
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    } else {
+                        // For PDFs, show an icon instead
+                        previewImage.src = '/static/images/pdf-icon.svg';
+                        previewImage.hidden = false;
+                    }
+                    
+                    previewArea.hidden = false;
+                    uploadPlaceholder.hidden = true;
+                } else {
+                    alert('Please upload an image or PDF file.');
+                }
+            }
+        }
+        
+        // Add form validation
+        const uploadForm = document.getElementById('upload-form');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function(e) {
+                if (!fileInput.files.length) {
+                    e.preventDefault();
+                    alert('Please select a file to upload.');
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        // Add confirmation to delete buttons
+        const deleteButtons = document.querySelectorAll('form[action*="delete_prescription"]');
+        deleteButtons.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const confirmed = confirm('Are you sure you want to delete this prescription?');
+                if (!confirmed) {
+                    e.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+        });
+    });
+</script>
+
+<style>
+    /* Custom styles for the prescription page */
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area.highlight {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+    }
+    
+    .upload-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 150px;
+    }
+    
+    .max-h-90vh {
+        max-height: 90vh;
+    }
+</style>
+{% endblock %}

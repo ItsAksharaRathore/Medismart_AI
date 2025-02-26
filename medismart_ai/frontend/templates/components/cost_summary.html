@@ -1,0 +1,147 @@
+<div class="header-controls">
+    <button class="btn text-btn refresh-btn">
+        <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+    <button class="btn text-btn help-btn" data-tooltip="Shows cost summary for prescribed and alternative medications">
+        <i class="fas fa-question-circle"></i>
+    </button>
+</div>
+</div>
+
+<div class="cost-summary-container">
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="card-icon prescribed-icon">
+            <i class="fas fa-file-prescription"></i>
+        </div>
+        <div class="card-content">
+            <h3>Prescribed Medications</h3>
+            <p class="price">₹{{ summary.prescribed_total }}</p>
+            <p class="item-count">{{ summary.prescribed_count }} medications</p>
+        </div>
+    </div>
+    
+    <div class="summary-card">
+        <div class="card-icon alternative-icon">
+            <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="card-content">
+            <h3>With Alternatives</h3>
+            <p class="price">₹{{ summary.alternative_total }}</p>
+            <p class="item-count">{{ summary.alternative_count }} medications</p>
+        </div>
+    </div>
+    
+    <div class="summary-card savings-card">
+        <div class="card-icon savings-icon">
+            <i class="fas fa-piggy-bank"></i>
+        </div>
+        <div class="card-content">
+            <h3>Potential Savings</h3>
+            <p class="price savings-amount">₹{{ summary.savings }}</p>
+            <p class="savings-percentage">{{ summary.savings_percentage }}%</p>
+        </div>
+    </div>
+</div>
+
+<div class="insurance-summary">
+    <div class="insurance-header">
+        <h3><i class="fas fa-shield-alt"></i> Insurance Coverage</h3>
+        {% if insurance.is_connected %}
+            <span class="connected-badge">
+                <i class="fas fa-link"></i> Connected
+            </span>
+        {% else %}
+            <button class="btn secondary-btn connect-insurance-btn">
+                <i class="fas fa-link"></i> Connect Insurance
+            </button>
+        {% endif %}
+    </div>
+    
+    {% if insurance.is_connected %}
+        <div class="insurance-details">
+            <div class="insurance-info">
+                <span class="info-label">Provider:</span>
+                <span class="info-value">{{ insurance.provider }}</span>
+            </div>
+            <div class="insurance-info">
+                <span class="info-label">Policy ID:</span>
+                <span class="info-value">{{ insurance.policy_id }}</span>
+            </div>
+            <div class="insurance-info">
+                <span class="info-label">Coverage Type:</span>
+                <span class="info-value">{{ insurance.coverage_type }}</span>
+            </div>
+        </div>
+        
+        <div class="coverage-summary">
+            <div class="coverage-card">
+                <h4>Prescribed</h4>
+                <div class="coverage-info">
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: {{ insurance.prescribed_coverage_percentage }}%"></div>
+                    </div>
+                    <p class="coverage-text">{{ insurance.prescribed_coverage_percentage }}% Covered</p>
+                </div>
+                <div class="coverage-amounts">
+                    <div class="amount-item">
+                        <span class="amount-label">Covered:</span>
+                        <span class="amount-value">₹{{ insurance.prescribed_covered_amount }}</span>
+                    </div>
+                    <div class="amount-item">
+                        <span class="amount-label">Out-of-pocket:</span>
+                        <span class="amount-value">₹{{ insurance.prescribed_out_of_pocket }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="coverage-card">
+                <h4>With Alternatives</h4>
+                <div class="coverage-info">
+                    <div class="coverage-bar">
+                        <div class="coverage-fill" style="width: {{ insurance.alternative_coverage_percentage }}%"></div>
+                    </div>
+                    <p class="coverage-text">{{ insurance.alternative_coverage_percentage }}% Covered</p>
+                </div>
+                <div class="coverage-amounts">
+                    <div class="amount-item">
+                        <span class="amount-label">Covered:</span>
+                        <span class="amount-value">₹{{ insurance.alternative_covered_amount }}</span>
+                    </div>
+                    <div class="amount-item">
+                        <span class="amount-label">Out-of-pocket:</span>
+                        <span class="amount-value">₹{{ insurance.alternative_out_of_pocket }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="connect-insurance-prompt">
+            <p>Connect your insurance to see potential coverage and reduce out-of-pocket expenses.</p>
+            <p class="insurance-benefits">
+                <i class="fas fa-check"></i> Get real-time coverage information<br>
+                <i class="fas fa-check"></i> Find alternatives with better coverage<br>
+                <i class="fas fa-check"></i> Reduce out-of-pocket expenses
+            </p>
+        </div>
+    {% endif %}
+</div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const connectInsuranceBtn = document.querySelector('.connect-insurance-btn');
+
+if (connectInsuranceBtn) {
+    connectInsuranceBtn.addEventListener('click', function() {
+        // In a real app, you would redirect to insurance connection page
+        // or open a modal for insurance connection
+        console.log('Connecting to insurance...');
+        alert('This would connect to your insurance provider in the real application.');
+    });
+}
+});
+</script>
+</body>
+</html>

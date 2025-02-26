@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSmart AI - User Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="profile-container">
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediSmart AI Logo">
+                <h2>MediSmart AI</h2>
+            </div>
+            
+            <div class="user-info">
+                <div class="avatar">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image }}" alt="{{ user.name }}">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            {{ user.name[0] }}
+                        </div>
+                    {% endif %}
+                </div>
+                <h3>{{ user.name }}</h3>
+                <p>{{ user.email }}</p>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="{{ url_for('profile') }}" class="nav-item active">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a href="{{ url_for('prescriptions') }}" class="nav-item">
+                    <i class="fas fa-file-medical"></i> Prescriptions
+                </a>
+                <a href="{{ url_for('medication_history') }}" class="nav-item">
+                    <i class="fas fa-pills"></i> Medication History
+                </a>
+                <a href="{{ url_for('insurance') }}" class="nav-item">
+                    <i class="fas fa-id-card"></i> Insurance
+                </a>
+                <a href="{{ url_for('settings') }}" class="nav-item">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="{{ url_for('help') }}" class="help-link">
+                    <i class="fas fa-question-circle"></i> Help
+                </a>
+                <a href="{{ url_for('logout') }}" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <header class="content-header">
+                <h1>User Profile</h1>
+                <div class="header-actions">
+                    <button class="btn secondary-btn">
+                        <i class="fas fa-bell"></i>
+                        {% if notifications_count > 0 %}
+                            <span class="notification-badge">{{ notifications_count }}</span>
+                        {% endif %}
+                    </button>
+                </div>
+            </header>
+            
+            <div class="profile-content">
+                <div class="profile-card">
+                    <div class="card-header">
+                        <h2>Personal Information</h2>
+                        <button class="btn text-btn" id="edit-profile-btn">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                    
+                    <div class="profile-form">
+                        <form action="{{ url_for('update_profile') }}" method="post" id="profile-form">
+                            <div class="form-group">
+                                <label for="full-name">Full Name</label>
+                                <input type="text" id="full-name" name="full_name" value="{{ user.name }}" required readonly>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" value="{{ user.email }}" required readonly>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" value="{{ user.phone }}" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dob">Date of Birth</label>
+                                    <input type="date" id="dob" name="dob" value="{{ user.dob }}" readonly>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="gender">Gender</label>
+                                    <select id="gender" name="gender" disabled>
+                                        <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                                        <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                                        <option value="other" {% if user.gender == 'other' %}selected{% endif %}>Other</option>
+                                        <option value="prefer-not-to-say" {% if user.gender == 'prefer-not-to-say' %}selected{% endif %}>Prefer not to say</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <textarea id="address" name="address" rows="3" readonly>{{ user.address }}</textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn primary-btn" id="save-profile-btn" hidden>
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <button type="button" class="btn secondary-btn" id="cancel-edit-btn" hidden>
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="health-info-card">
+                    <div class="card-header">
+                        <h2>Health Information</h2>
+                        <button class="btn text-btn" id="edit-health-info-btn">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                    
+                    <div class="health-form">
+                        <form action="{{ url_for('update_health_info') }}" method="post" id="health-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="blood-group">Blood Group</label>
+                                    <select id="blood-group" name="blood_group" disabled>
+                                        <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                                        <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                                        <option value="B+" {% if user.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                                        <option value="B-" {% if user.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                                        <option value="AB+" {% if user.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                                        <option value="AB-" {% if user.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                                        <option value="O+" {% if user.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                                        <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                                        <option value="unknown" {% if user.blood_group == 'unknown' %}selected{% endif %}>Unknown</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="height">Height (cm)</label>
+                                    <input type="number" id="height" name="height" value="{{ user.height }}" readonly>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="weight">Weight (kg)</label>
+                                    <input type="number" id="weight" name="weight" value="{{ user.weight }}" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="allergies">Known Allergies</label>
+                                <textarea id="allergies" name="allergies" rows="2" readonly>{{ user.allergies }}</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="chronic-conditions">Chronic Conditions</label>
+                                <textarea id="chronic-conditions" name="chronic_conditions" rows="2" readonly>{{ user.chronic_conditions }}</textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn primary-btn" id="save-health-btn" hidden>
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <button type="button" class="btn secondary-btn" id="cancel-health-btn" hidden>
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile edit functionality
+            const editProfileBtn = document.getElementById('edit-profile-btn');
+            const saveProfileBtn = document.getElementById('save-profile-btn');
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+            const profileForm = document.getElementById('profile-form');
+            const profileInputs = profileForm.querySelectorAll('input, textarea, select');
+            
+            editProfileBtn.addEventListener('click', function() {
+                editProfileBtn.hidden = true;
+                saveProfileBtn.hidden = false;
+                cancelEditBtn.hidden = false;
+                
+                profileInputs.forEach(input => {
+                    input.readOnly = false;
+                    input.disabled = false;
+                });
+            });
+            
+            cancelEditBtn.addEventListener('click', function() {
+                editProfileBtn.hidden = false;
+                saveProfileBtn.hidden = true;
+                cancelEditBtn.hidden = true;
+                
+                profileForm.reset();
+                
+                profileInputs.forEach(input => {
+                    input.readOnly = true;
+                    input.disabled = true;
+                });
+            });
+            
+            // Health info edit functionality
+            const editHealthBtn = document.getElementById('edit-health-info-btn');
+            const saveHealthBtn = document.getElementById('save-health-btn');
+            const cancelHealthBtn = document.getElementById('cancel-health-btn');
+            const healthForm = document.getElementById('health-form');
+            const healthInputs = healthForm.querySelectorAll('input, textarea, select');
+            
+            editHealthBtn.addEventListener('click', function() {
+                editHealthBtn.hidden = true;
+                saveHealthBtn.hidden = false;
+                cancelHealthBtn.hidden = false;
+                
+                healthInputs.forEach(input => {
+                    input.readOnly = false;
+                    input.disabled = false;
+                });
+            });
+            
+            cancelHealthBtn.addEventListener('click', function() {
+                editHealthBtn.hidden = false;
+                saveHealthBtn.hidden = true;
+                cancelHealthBtn.hidden = true;
+                
+                healthForm.reset();
+                
+                healthInputs.forEach(input => {
+                    input.readOnly = true;
+                    input.disabled = true;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

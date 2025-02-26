@@ -1,0 +1,187 @@
+<!-- templates/drug_interactions.html -->
+{% extends "base.html" %}
+
+{% block title %}MediSmart AI - Drug Interactions{% endblock %}
+
+{% block content %}
+<div class="interactions-component">
+    <div class="component-header">
+        <h2><i class="fas fa-exclamation-triangle"></i> Drug Interactions</h2>
+        <div class="header-controls">
+            <button class="btn text-btn refresh-btn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn text-btn help-btn" data-tooltip="Shows potential interactions between prescribed medications">
+                <i class="fas fa-question-circle"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="interactions-container">
+        {% if interactions|length > 0 %}
+            <div class="interactions-summary">
+                <div class="interaction-severity-counts">
+                    <div class="severity-item high {% if interactions.high_count > 0 %}active{% endif %}">
+                        <div class="severity-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="severity-info">
+                            <span class="severity-label">High</span>
+                            <span class="severity-count">{{ interactions.high_count }}</span>
+                        </div>
+                    </div>
+                    <div class="severity-item moderate {% if interactions.moderate_count > 0 %}active{% endif %}">
+                        <div class="severity-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="severity-info">
+                            <span class="severity-label">Moderate</span>
+                            <span class="severity-count">{{ interactions.moderate_count }}</span>
+                        </div>
+                    </div>
+                    <div class="severity-item low {% if interactions.low_count > 0 %}active{% endif %}">
+                        <div class="severity-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="severity-info">
+                            <span class="severity-label">Low</span>
+                            <span class="severity-count">{{ interactions.low_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if interactions.high_count > 0 %}
+                    <div class="interaction-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>High-severity interactions detected. Please consult your doctor before proceeding.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="interactions-list">
+                <div class="interactions-filter">
+                    <label for="severity-filter">Filter by Severity:</label>
+                    <select id="severity-filter">
+                        <option value="all">All Interactions</option>
+                        <option value="high">High Only</option>
+                        <option value="moderate">Moderate Only</option>
+                        <option value="low">Low Only</option>
+                    </select>
+                </div>
+                
+                {% for interaction in interactions["interactions"] %}
+                    <div class="interaction-card severity-{{ interaction.severity }}">
+                        <div class="interaction-header">
+                            <div class="severity-badge {{ interaction.severity }}">
+                                {% if interaction.severity == 'high' %}
+                                    <i class="fas fa-exclamation-circle"></i> High
+                                {% elif interaction.severity == 'moderate' %}
+                                    <i class="fas fa-exclamation-triangle"></i> Moderate
+                                {% elif interaction.severity == 'low' %}
+                                    <i class="fas fa-info-circle"></i> Low
+                                {% endif %}
+                            </div>
+                            <div class="interaction-medications">
+                                <h3>{{ interaction.medication1 }} & {{ interaction.medication2 }}</h3>
+                            </div>
+                            <div class="interaction-actions">
+                                <button class="btn text-btn toggle-details-btn">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="interaction-details" hidden>
+                            <div class="interaction-description">
+                                <h4>Description</h4>
+                                <p>{{ interaction.description }}</p>
+                            </div>
+                            
+                            <div class="interaction-effects">
+                                <h4>Potential Effects</h4>
+                                <ul>
+                                    {% for effect in interaction.effects %}
+                                        <li>{{ effect }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            
+                            <div class="interaction-recommendations">
+                                <h4>Recommendations</h4>
+                                <ul>
+                                    {% for recommendation in interaction.recommendations %}
+                                        <li>{{ recommendation }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            
+                            <div class="interaction-references">
+                                <h4>References</h4>
+                                <ul>
+                                    {% for reference in interaction.references %}
+                                        <li><a href="{{ reference.url }}" target="_blank">{{ reference.title }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-interactions">
+                <i class="fas fa-check-circle"></i>
+                <h3>No Interactions Detected</h3>
+                <p>We haven't detected any interactions between the prescribed medications.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle interaction details
+        const toggleDetailsBtns = document.querySelectorAll('.toggle-details-btn');
+        
+        toggleDetailsBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const detailsSection = this.closest('.interaction-card').querySelector('.interaction-details');
+                const icon = this.querySelector('i');
+                
+                if (detailsSection.hidden) {
+                    detailsSection.hidden = false;
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    detailsSection.hidden = true;
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+        });
+        
+        // Filter interactions by severity
+        const severityFilter = document.getElementById('severity-filter');
+        const interactionCards = document.querySelectorAll('.interaction-card');
+        
+        if (severityFilter) {
+            severityFilter.addEventListener('change', function() {
+                const selectedSeverity = this.value;
+                
+                interactionCards.forEach(card => {
+                    if (selectedSeverity === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        if (card.classList.contains('severity-' + selectedSeverity)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

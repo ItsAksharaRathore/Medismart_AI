@@ -1,0 +1,232 @@
+<!-- templates/alternative_medications.html -->
+{% extends "base.html" %}
+
+{% block title %}MediSmart AI - Alternative Medications{% endblock %}
+
+{% block content %}
+<div class="alternatives-component">
+    <div class="component-header">
+        <h2><i class="fas fa-exchange-alt"></i> Alternative Medications</h2>
+        <div class="header-controls">
+            <button class="btn text-btn refresh-btn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn text-btn help-btn" data-tooltip="Shows alternative medications with similar effects but potentially lower costs or better insurance coverage">
+                <i class="fas fa-question-circle"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="alternatives-container">
+        {% if alternatives|length > 0 %}
+            {% for medication in alternatives %}
+                <div class="medication-card">
+                    <div class="medication-header">
+                        <div class="prescribed-info">
+                            <h3>{{ medication.original_name }}</h3>
+                            <div class="med-tags">
+                                <span class="tag prescribed">Prescribed</span>
+                                {% if medication.original_type == 'branded' %}
+                                    <span class="tag branded">Branded</span>
+                                {% elif medication.original_type == 'generic' %}
+                                    <span class="tag generic">Generic</span>
+                                {% endif %}
+                            </div>
+                            <p class="med-details">{{ medication.original_dosage }} | {{ medication.original_frequency }}</p>
+                        </div>
+                        <div class="price-info">
+                            <p class="price">₹{{ medication.original_price }}</p>
+                            <p class="coverage">
+                                {% if medication.original_coverage %}
+                                    <span class="covered"><i class="fas fa-check-circle"></i> Covered</span>
+                                {% else %}
+                                    <span class="not-covered"><i class="fas fa-times-circle"></i> Not Covered</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="alternatives-list">
+                        <h4>Alternatives</h4>
+                        {% for alt in medication.alternatives %}
+                            <div class="alternative-item {% if alt.recommended %}recommended{% endif %}">
+                                <div class="alt-info">
+                                    <div class="alt-name-container">
+                                        <h5>{{ alt.name }}</h5>
+                                        <div class="med-tags">
+                                            {% if alt.type == 'branded' %}
+                                                <span class="tag branded">Branded</span>
+                                            {% elif alt.type == 'generic' %}
+                                                <span class="tag generic">Generic</span>
+                                            {% endif %}
+                                            
+                                            {% if alt.recommended %}
+                                                <span class="tag recommended">Recommended</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <p class="med-details">{{ alt.dosage }} | {{ alt.manufacturer }}</p>
+                                    
+                                    <div class="similarity-info">
+                                        <div class="similarity-bar">
+                                            <div class="similarity-fill" style="width: {{ alt.similarity_score }}%"></div>
+                                        </div>
+                                        <p class="similarity-text">{{ alt.similarity_score }}% similar</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="alt-price-info">
+                                    <p class="price">₹{{ alt.price }}</p>
+                                    <p class="savings">Save ₹{{ medication.original_price - alt.price }}</p>
+                                    <p class="coverage">
+                                        {% if alt.coverage %}
+                                            <span class="covered"><i class="fas fa-check-circle"></i> Covered</span>
+                                        {% else %}
+                                            <span class="not-covered"><i class="fas fa-times-circle"></i> Not Covered</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                
+                                <div class="alt-actions">
+                                    <button class="btn primary-btn select-alt-btn" data-original="{{ medication.original_name }}" data-alternative="{{ alt.name }}">
+                                        Select
+                                    </button>
+                                    <button class="btn text-btn more-info-btn" data-medication="{{ alt.name }}">
+                                        <i class="fas fa-info-circle"></i> More Info
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-alternatives">
+                <i class="fas fa-search"></i>
+                <h3>No Alternatives Found</h3>
+                <p>We couldn't find any suitable alternatives for the prescribed medications.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Medication Info Modal -->
+<div class="medication-modal" id="medication-info-modal" hidden>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modal-medication-name">Medication Name</h2>
+            <button class="btn text-btn close-modal-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="medication-details">
+                <div class="detail-group">
+                    <h3>General Information</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Active Ingredient:</span>
+                        <span class="detail-value" id="modal-active-ingredient">Paracetamol</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Classification:</span>
+                        <span class="detail-value" id="modal-classification">Analgesic, Antipyretic</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Manufacturer:</span>
+                        <span class="detail-value" id="modal-manufacturer">Cipla Ltd.</span>
+                    </div>
+                </div>
+                
+                <div class="detail-group">
+                    <h3>Medical Information</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Primary Use:</span>
+                        <span class="detail-value" id="modal-primary-use">Pain relief, Fever reduction</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Common Side Effects:</span>
+                        <span class="detail-value" id="modal-side-effects">Nausea, Stomach pain, Headache</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Contraindications:</span>
+                        <span class="detail-value" id="modal-contraindications">Liver disease, Alcoholism</span>
+                    </div>
+                </div>
+                
+                <div class="detail-group">
+                    <h3>Availability & Pricing</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Price Range:</span>
+                        <span class="detail-value" id="modal-price-range">₹25 - ₹45</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Insurance Coverage:</span>
+                        <span class="detail-value" id="modal-insurance">Covered by most insurance plans</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Availability:</span>
+                        <span class="detail-value" id="modal-availability">Widely available at most pharmacies</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn secondary-btn" id="modal-close-btn">Close</button>
+            <button class="btn primary-btn" id="modal-select-btn">Select This Alternative</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal functionality
+        const modal = document.getElementById('medication-info-modal');
+        const moreInfoBtns = document.querySelectorAll('.more-info-btn');
+        const closeModalBtns = document.querySelectorAll('.close-modal-btn, #modal-close-btn');
+        
+        moreInfoBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const medicationName = this.getAttribute('data-medication');
+                // In a real app, you would fetch medication details here
+                document.getElementById('modal-medication-name').textContent = medicationName;
+                modal.hidden = false;
+            });
+        });
+        
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                modal.hidden = true;
+            });
+        });
+        
+        // Alternative selection functionality
+        const selectAltBtns = document.querySelectorAll('.select-alt-btn');
+        
+        selectAltBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const originalMed = this.getAttribute('data-original');
+                const alternativeMed = this.getAttribute('data-alternative');
+                
+                // In a real app, you would send this selection to the server
+                console.log(`Selected ${alternativeMed} as alternative for ${originalMed}`);
+                
+                // Visual feedback
+                const altItem = this.closest('.alternative-item');
+                const allAlts = altItem.parentElement.querySelectorAll('.alternative-item');
+                
+                allAlts.forEach(alt => {
+                    alt.classList.remove('selected');
+                });
+                
+                altItem.classList.add('selected');
+                this.textContent = 'Selected';
+                this.disabled = true;
+            });
+        });
+    });
+</script>
+{% endblock %}

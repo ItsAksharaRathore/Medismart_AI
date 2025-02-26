@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    environment:
+      - APP_ENVIRONMENT=production
+      - APP_DATABASE_HOST=db
+      - APP_DATABASE_NAME=healthcare_db
+      - APP_DATABASE_USER=postgres
+      - APP_DATABASE_PASSWORD=securepassword
+    depends_on:
+      - db
+    networks:
+      - app-network
+  
+  db:
+    image: postgres:13
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=healthcare_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=securepassword
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://api:5000
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

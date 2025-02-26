@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSmart AI - Upload Prescription</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="upload-container">
+        <div class="upload-card">
+            <div class="card-header">
+                <h2><i class="fas fa-file-medical"></i> Upload Prescription</h2>
+                <p>Upload a clear image of your prescription for analysis</p>
+            </div>
+            
+            <form action="{{ url_for('upload_prescription') }}" method="post" enctype="multipart/form-data" id="upload-form">
+                <div class="upload-area" id="drop-area">
+                    <input type="file" name="prescription" id="file-input" accept="image/*" required hidden>
+                    <div class="upload-placeholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag and drop your prescription image here</p>
+                        <p>or</p>
+                        <button type="button" id="browse-btn" class="btn primary-btn">Browse Files</button>
+                    </div>
+                    <div class="file-preview" id="file-preview" hidden>
+                        <img id="preview-image" src="" alt="Prescription preview">
+                        <div class="file-info">
+                            <p id="file-name">filename.jpg</p>
+                            <button type="button" id="remove-file" class="btn text-btn">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="language-selection">
+                    <label for="language">Prescription Language:</label>
+                    <select name="language" id="language">
+                        <option value="auto">Auto-detect</option>
+                        <option value="english">English</option>
+                        <option value="hindi">Hindi</option>
+                        <option value="spanish">Spanish</option>
+                        <option value="french">French</option>
+                        <option value="chinese">Chinese</option>
+                    </select>
+                </div>
+                
+                <div class="processing-options">
+                    <h3>Processing Options</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="find-alternatives" name="find_alternatives" checked>
+                            <label for="find-alternatives">Find Alternative Medications</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="check-interactions" name="check_interactions" checked>
+                            <label for="check-interactions">Check Drug Interactions</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="insurance-coverage" name="insurance_coverage">
+                            <label for="insurance-coverage">Check Insurance Coverage</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn primary-btn" id="process-btn">
+                        <i class="fas fa-microscope"></i> Process Prescription
+                    </button>
+                    <button type="button" class="btn secondary-btn" id="scan-btn">
+                        <i class="fas fa-camera"></i> Scan Directly
+                    </button>
+                </div>
+            </form>
+            
+            <div class="upload-instructions">
+                <h4><i class="fas fa-info-circle"></i> For Best Results:</h4>
+                <ul>
+                    <li>Ensure good lighting when taking photos</li>
+                    <li>Keep the prescription flat to avoid distortion</li>
+                    <li>Make sure all text is clearly visible in the frame</li>
+                    <li>Supported formats: JPG, PNG, HEIC, PDF</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const browseBtn = document.getElementById('browse-btn');
+            const previewArea = document.getElementById('file-preview');
+            const previewImage = document.getElementById('preview-image');
+            const fileName = document.getElementById('file-name');
+            const removeBtn = document.getElementById('remove-file');
+            const uploadPlaceholder = document.querySelector('.upload-placeholder');
+            
+            // Browse button
+            browseBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // File selection
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            // Remove file
+            removeBtn.addEventListener('click', () => {
+                fileInput.value = '';
+                previewArea.hidden = true;
+                uploadPlaceholder.hidden = false;
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight() {
+                dropArea.classList.add('highlight');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('highlight');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length) {
+                    fileInput.files = files;
+                    handleFileSelect();
+                }
+            }
+            
+            function handleFileSelect() {
+                if (fileInput.files.length) {
+                    const file = fileInput.files[0];
+                    
+                    if (file.type.match('image.*')) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                            fileName.textContent = file.name;
+                            previewArea.hidden = false;
+                            uploadPlaceholder.hidden = true;
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<nav class="bg-white border-b border-gray-200 fixed w-full z-10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex">
+        <div class="flex-shrink-0 flex items-center">
+          <a href="{{ url_for('index') }}" class="text-xl font-bold text-blue-600">
+            MediSmart AI
+          </a>
+        </div>
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <a href="{{ url_for('dashboard') }}"
+             class="{% if request.endpoint == 'dashboard' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Dashboard
+          </a>
+
+          <a href="{{ url_for('history') }}"
+             class="{% if request.endpoint == 'history' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            History
+          </a>
+
+          <a href="{{ url_for('medications') }}"
+             class="{% if request.endpoint == 'medications' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Medications
+          </a>
+
+          <a href="{{ url_for('alternative_medications') }}"
+             class="{% if request.endpoint == 'alternative_medications' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Alternatives
+          </a>
+
+          <a href="{{ url_for('drug_interactions') }}"
+             class="{% if request.endpoint == 'drug_interactions' %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Interactions
+          </a>
+        </div>
+      </div>
+
+      <div class="hidden sm:ml-6 sm:flex sm:items-center">
+        {% if current_user.is_authenticated %}
+          <div class="relative" x-data="{ open: false }">
+            <button @click="open = !open" class="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500">
+              <i class="fas fa-user h-6 w-6"></i>
+            </button>
+            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              <div class="px-4 py-2 font-medium text-gray-900">
+                {{ current_user.name or current_user.email }}
+              </div>
+              <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-cog mr-2"></i> Profile Settings
+              </a>
+              <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center sm:hidden">
+        <div class="relative" x-data="{ open: false }">
+          <button @click="open = !open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
+            <i class="fas fa-bars h-6 w-6"></i>
+          </button>
+          <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+            <a href="{{ url_for('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              Dashboard
+            </a>
+            <a href="{{ url_for('history') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              History
+            </a>
+            <a href="{{ url_for('medications') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              Medications
+            </a>
+            <a href="{{ url_for('alternative_medications') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              Alternatives
+            </a>
+            <a href="{{ url_for('drug_interactions') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              Interactions
+            </a>
+
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Profile
+              </a>
+              <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                Logout
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

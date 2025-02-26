@@ -1,0 +1,480 @@
+/* Global Styles */
+:root {
+    /* Color Variables */
+    --primary: #3367d6;
+    --primary-dark: #1a56bd;
+    --primary-light: #eaf1ff;
+    --secondary: #34a853;
+    --secondary-dark: #2d8644;
+    --secondary-light: #e8f5e9;
+    --warning: #fbbc05;
+    --warning-dark: #d9a106;
+    --warning-light: #fff8e1;
+    --danger: #ea4335;
+    --danger-dark: #d33426;
+    --danger-light: #fee8e6;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --white: #ffffff;
+    --black: #000000;
+    
+    /* Font Variables */
+    --font-family: 'Roboto', 'Noto Sans', sans-serif;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    
+    /* Spacing Variables */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    
+    /* Border Radius */
+    --border-radius-sm: 0.25rem;
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 0.75rem;
+    --border-radius-xl: 1rem;
+    
+    /* Shadow */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Base Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: var(--font-family);
+    color: var(--gray-800);
+    background-color: var(--gray-100);
+    line-height: 1.5;
+    font-size: var(--font-size-md);
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  
+  h1 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  h2 {
+    font-size: var(--font-size-xl);
+  }
+  
+  h3 {
+    font-size: var(--font-size-lg);
+  }
+  
+  p {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Button Styles */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-size: var(--font-size-md);
+    gap: var(--spacing-sm);
+  }
+  
+  .primary-btn {
+    background-color: var(--primary);
+    color: var(--white);
+  }
+  
+  .primary-btn:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  .secondary-btn {
+    background-color: var(--white);
+    color: var(--gray-800);
+    border: 1px solid var(--gray-300);
+  }
+  
+  .secondary-btn:hover {
+    background-color: var(--gray-100);
+  }
+  
+  .text-btn {
+    background: transparent;
+    color: var(--primary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .text-btn:hover {
+    background-color: var(--primary-light);
+  }
+  
+  /* Form Styles */
+  input, select, textarea {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--gray-300);
+    /* General Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+.content-container {
+  margin-top: 4rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.primary-btn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.primary-btn:hover {
+  background-color: #2563eb;
+}
+
+.secondary-btn {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.secondary-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.text-btn {
+  background: none;
+  color: #6b7280;
+  padding: 0.25rem 0.5rem;
+}
+
+.text-btn:hover {
+  color: #4b5563;
+}
+
+/* Component Styles */
+.component-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.component-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+.header-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Tag Styles */
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.prescribed {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.branded {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.generic {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.recommended {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+/* Alternative Medications Styles */
+.alternatives-component {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.medication-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.medication-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.med-tags {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.med-details {
+  margin: 0.5rem 0 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.price-info {
+  text-align: right;
+}
+
+.price {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.coverage {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
+.covered {
+  color: #059669;
+}
+
+.not-covered {
+  color: #dc2626;
+}
+
+.alternatives-list {
+  padding: 1rem;
+}
+
+.alternatives-list h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.alternative-item {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.alternative-item:last-child {
+  margin-bottom: 0;
+}
+
+.alternative-item.recommended {
+  border-color: #93c5fd;
+  background-color: #eff6ff;
+}
+
+.alternative-item.selected {
+  border-color: #10b981;
+  background-color: #ecfdf5;
+}
+
+.alt-info {
+  flex: 1;
+  min-width: 250px;
+}
+
+.alt-name-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.alt-name-container h5 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.similarity-info {
+  margin-top: 0.75rem;
+}
+
+.similarity-bar {
+  height: 0.5rem;
+  background-color: #e5e7eb;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.similarity-fill {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 0.25rem;
+}
+
+.similarity-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.alt-price-info {
+  min-width: 150px;
+  margin: 1rem 1rem 1rem 0;
+}
+
+.alt-price-info .price {
+  color: #059669;
+}
+
+.savings {
+  color: #059669;
+  font-size: 0.875rem;
+  margin: 0.25rem 0;
+}
+
+.alt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.no-alternatives {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+}
+
+.no-alternatives i {
+  font-size: 3rem;
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+
+.no-alternatives h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #4b5563;
+}
+
+.no-alternatives p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Medication Modal */
+.medication-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25
+}

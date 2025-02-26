@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSmart AI - Insurance Coverage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="insurance-component">
+        <div class="component-header">
+            <h2><i class="fas fa-shield-alt"></i> Insurance Coverage</h2>
+            <div class="header-controls">
+                <button class="btn text-btn refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button class="btn text-btn help-btn" data-tooltip="Shows insurance coverage details for all medications">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+            </div>
+        </div>
+        
+        {% if insurance.is_connected %}
+            <div class="insurance-status connected">
+                <div class="status-info">
+                    <h3>{{ insurance.provider }}</h3>
+                    <p>Policy: {{ insurance.policy_id }} | {{ insurance.plan_name }}</p>
+                </div>
+                <button class="btn secondary-btn">
+                    <i class="fas fa-cog"></i> Manage
+                </button>
+            </div>
+            
+            <div class="coverage-details">
+                <div class="coverage-overview">
+                    <div class="overview-card">
+                        <div class="overview-icon">
+                            <i class="fas fa-prescription-bottle-alt"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h4>Covered Medications</h4>
+                            <p class="overview-value">{{ insurance.covered_count }} of {{ insurance.total_count }}</p>
+                            <p class="overview-percentage">{{ insurance.coverage_percentage }}%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h4>Covered Amount</h4>
+                            <p class="overview-value">₹{{ insurance.covered_amount }}</p>
+                            <p class="overview-percentage">{{ insurance.amount_percentage }}% of total</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h4>Out-of-Pocket</h4>
+                            <p class="overview-value">₹{{ insurance.out_of_pocket }}</p>
+                            <p class="overview-percentage">{{ 100 - insurance.amount_percentage }}% of total</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="medications-coverage">
+                    <div class="coverage-header">
+                        <h3>Medication Coverage Details</h3>
+                        <div class="coverage-filter">
+                            <label for="coverage-filter">Show:</label>
+                            <select id="coverage-filter">
+                                <option value="all">All Medications</option>
+                                <option value="covered">Covered Only</option>
+                                <option value="not-covered">Not Covered Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="coverage-list">
+                        {% for medication in insurance.medications %}
+                            <div class="coverage-item {% if medication.is_covered %}covered{% else %}not-covered{% endif %}">
+                                <div class="medication-info">
+                                    <h4>{{ medication.name }}</h4>
+                                    <p class="medication-details">{{ medication.dosage }} | {{ medication.frequency }}</p>
+                                </div>
+                                
+                                <div class="coverage-status">
+                                    {% if medication.is_covered %}
+                                        <span class="status-badge covered">
+                                            <i class="fas fa-check-circle"></i> Covered
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge not-covered">
+                                            <i class="fas fa-times-circle"></i> Not Covered
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="coverage-info">
+                                    <div class="info-item">
+                                        <span class="info-label">Price:</span>
+                                        <span class="info-value">₹{{ medication.price }}</span>
+                                    </div>
+                                    
+                                    {% if medication.is_covered %}
+                                        <div class="info-item">
+                                            <span class="info-label">Insurance pays:</span>
+                                            <span class="info-value">₹{{ medication.covered_amount }}</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">You pay:</span>
+                                            <span class="info-value">₹{{ medication.out_of_pocket }}</span>
+                                        </div>
+                                    {% else %}
+                                        <div class="info-item">
+                                            <span class="info-label">You pay:</span>
+                                            <span class="info-value">₹{{ medication.price }}</span>
+                                        </div>
+                                        
+                                        {% if medication.alternatives|length > 0 %}
+                                            <div class="has-alternatives">
+                                                <i class="fas fa-exchange-alt"></i> Has covered alternatives
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="coverage-actions">
+                                    {% if not medication.is_covered and medication.alternatives|length > 0 %}
+                                        <button class="btn secondary-btn view-alternatives-btn" data-medication="{{ medication.name }}">
+                                            View Alternatives
+                                        </button>
+                                    {% endif %}
+                                    
+                                    <button class="btn text-btn coverage-details-btn" data-medication="{{ medication.name }}">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="insurance-status not-connected">
+                <div class="status-info">
+                    <h3>No Insurance Connected</h3>
+                    <p>Connect your insurance to see coverage information</p>
+                </div>
+                <button class="btn primary-btn connect-insurance-btn">
+                    <i class="fas fa-link"></i> Connect Insurance
+                </button>
+            </div>
+            
+            <div class="insurance-benefits">
+                <h3>Benefits of Connecting Insurance</h3>
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Real-Time Coverage Information</h4>
+                            <p>See which medications are covered by your insurance and how much you'll pay out-of-pocket.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Find Covered Alternatives</h4>
+                            <p>Discover alternative medications that provide similar benefits but with better insurance coverage.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div class="benefit-content">
+                            <h4>Reduce Your Expenses</h4>
+                            <p>Maximize your insurance benefits and minimize out-of-pocket costs for your medications.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="supported-providers">
+                    <h4>Supported Insurance Providers</h4>
+                    <div class="providers-list">
+                        <div class="provider-logo">Star Health</div>
+                        <div class="provider-logo">HDFC ERGO</div>
+                        <div class="provider-logo">Bajaj Allianz</div>
+                        <div class="provider-logo">ICICI Lombard</div>
+                        <div class="provider-logo">New India</div>
+                        <div class="provider-logo">+10 more</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Insurance connection functionality
+            const connectInsuranceBtn = document.querySelector('.connect-insurance-btn');
+            
+            if (connectInsuranceBtn) {
+                connectInsuranceBtn.addEventListener('click', function() {
+                    // In a real app, you would redirect to insurance connection page
+                    // or open a modal for insurance connection
+                    console.log('Connecting to insurance...');
+                    alert('This would connect to your insurance provider in the real application.');
+                });
+            }
+            
+            // Coverage filter functionality
+            const coverageFilter = document.getElementById('coverage-filter');
+            const coverageItems = document.querySelectorAll('.coverage-item');
+            
+            if (coverageFilter) {
+                coverageFilter.addEventListener('change', function() {
+                    const selectedFilter = this.value;
+                    
+                    coverageItems.forEach(item => {
+                        if (selectedFilter === 'all') {
+                            item.style.display = 'flex';
+                        } else if (selectedFilter === 'covered' && item.classList.contains('covered')) {
+                            item.style.display = 'flex';
+                        } else if (selectedFilter === 'not-covered' && item.classList.contains('not-covered')) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // View alternatives functionality
+            const viewAlternativesBtns = document.querySelectorAll('.view-alternatives-btn');
+            
+            viewAlternativesBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const medicationName = this.getAttribute('data-medication');
+                    // In a real app, you would navigate to alternatives view or open modal
+                    console.log(`Viewing alternatives for ${medicationName}`);
+                    alert(`This would show alternatives for ${medicationName} in the real application.`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
